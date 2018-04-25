@@ -8,18 +8,13 @@ import constants
 app = Flask(__name__)
 
 @app.route('/')
-def hello_world():
-    return 'Hello from Jerel!'
+def homepage():
+    return 'one day this will be a microblog site'
 
 @app.route('/about_me')
 def about_me():
-    return app.send_static_file('about_me.html')
+    return render_template('about_me.html')
 
-'''
-@app.route('/class_schedule')
-def class_schedule():
-    return app.send_static_file('class_schedule.html')
-'''
 @app.route('/class_schedule')
 def class_schedule():
     return render_template('class_schedule.html',
@@ -27,5 +22,5 @@ def class_schedule():
 
 @app.route('/registration')
 def registration():
-    return app.send_static_file('registration.html')
+    return render_template('registration.html')
 
