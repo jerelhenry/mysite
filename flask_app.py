@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def homepage():
-    return 'one day this will be a microblog site'
+    return render_template('index.html')
 
 @app.route('/about_me')
 def about_me():
