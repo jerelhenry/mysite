@@ -1,3 +1,5 @@
+import course
+
 class Course(object):
     def __init__(self,
                  period=None,

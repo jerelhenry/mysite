@@ -4,8 +4,11 @@
 from flask import Flask
 from flask import render_template
 import constants
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+app.config.from_object('config.BaseConfig')
+db = SQLAlchemy(app)
 
 @app.route('/')
 def homepage():
@@ -23,4 +26,10 @@ def class_schedule():
 @app.route('/registration')
 def registration():
     return render_template('registration.html')
+
+@app.route('/top_ten_songs')
+def top_ten_songs():
+    return render_template('top_ten_songs.html', songs=constants. TOP_TEN_SONGS)
+
+from flask_sqlalchemy import SQLAlchemy
 
