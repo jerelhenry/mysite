@@ -1,6 +1,7 @@
 import course
 import song
 
+'''
 COURSES = [
     course.Course(period=1,
                   name='Intro to Computer Science',
@@ -33,6 +34,7 @@ COURSES = [
                   resource_name='AVID',
                   resource_url='https://www.avid.org/'),
 ]
+'''
 
 TOP_TEN_SONGS = [
     song.Song(title="Love Yourz",

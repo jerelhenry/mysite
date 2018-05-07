@@ -28,8 +28,9 @@ def about_me():
 
 @app.route('/class_schedule')
 def class_schedule():
+    courses = Course.query.all()
     return render_template('class_schedule.html',
-                           courses=constants.COURSES)
+                           courses=courses)
 
 @app.route('/registration')
 def registration():
@@ -39,5 +40,6 @@ def registration():
 def top_ten_songs():
     return render_template('top_ten_songs.html', songs=constants. TOP_TEN_SONGS)
 
-from flask_sqlalchemy import SQLAlchemy
+if __name__ == '__main__':
+  db.create_all()
 
