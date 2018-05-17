@@ -17,11 +17,14 @@ from flask import redirect
 from flask import url_for
 from wtforms.validators import ValidationError
 from flask import flash
+from flask_login import LoginManager, UserMixin, current_user, login_user, logout_user
+
 
 app = Flask(__name__)
 
 app.config.from_object('config.BaseConfig')
 db = SQLAlchemy(app)
+login = LoginManager(app)
 Bootstrap(app)
 SSLify(app)
 class Course(db.Model):
@@ -51,7 +54,7 @@ class RegistrationForm(FlaskForm):
         if user is not None:
             raise ValidationError('Please choose a different username.')
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(15))
     email = db.Column(db.String(150))
@@ -67,6 +70,10 @@ class LoginForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired()])
     password = PasswordField('Password', validators=[InputRequired()])
     submit = SubmitField('Sign in')
+
+@login.user_loader
+def load_user(user_id):
+    return User.query.filter_by(id=int(user_id)).first()
 
 @app.route('/')
 def homepage():
@@ -92,6 +99,7 @@ def registration():
         new_user.set_password(form.password.data)
         db.session.add(new_user)
         db.session.commit()
+        login_user(new_user)
         return redirect(url_for('homepage'))
     return render_template('registration.html', form=form)
 
@@ -103,12 +111,32 @@ def top_ten_songs():
 if __name__ == '__main__':
   db.create_all()
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('homepage'))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if not user or not user.check_password(form.password.data):
+            flash('Username or password is incorrect.', 'danger')
+            return render_template('login.html', form=form)
+        login_user(user)
+        return redirect(url_for('homepage'))
+    return render_template('login.html', form=form)
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('homepage'))
+
 nav = Nav(app)
 @nav.navigation('mysite_navbar')
 def create_navbar():
     home_view = View('Home', 'homepage')
     login_view = View('Login', 'login')
-    register_view = View('Registration', 'registration')
+    logout_view = View('Logout', 'logout')
+    registration_view = View('Registration', 'registration')
     about_me_view = View('About Me', 'about_me')
     class_schedule_view = View('Class Schedule', 'class_schedule')
     top_ten_songs_view = View('Top Ten Songs', 'top_ten_songs')
@@ -116,15 +144,7 @@ def create_navbar():
                              about_me_view,
                              class_schedule_view,
                              top_ten_songs_view)
-    return Navbar('MySite', home_view, misc_subgroup, login_view, register_view)
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
-        if not user or not user.check_password(form.password.data):
-            flash('Username or password is incorrect.', 'danger')
-            return render_template('login.html', form=form)
-        return 'Welcome ' + user.username + '!'
-    return render_template('login.html', form=form)
+    if current_user.is_authenticated:
+        return Navbar('MySite', home_view, misc_subgroup, logout_view)
+    else:
+        return Navbar('MySite', home_view, misc_subgroup, login_view, registration_view)
